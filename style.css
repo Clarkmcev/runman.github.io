@@ -1,0 +1,61 @@
+body {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#start-menu, #game-over {
+    position: absolute;
+    text-align: center;
+    padding-top: 120px;
+    width: 800px;
+    height: 500px;;
+    height: 50vh;
+}
+
+
+.biglogo {
+    width: 600px;
+}
+
+.blackscreen {
+    width: 650px;
+
+}
+
+.gameovermessage {
+    position: absolute;
+    text-align: center;
+    margin-top: 50px;
+    left: 200px;
+    width: 25em;
+}
+
+#press-enter {
+    position: absolute;
+    width: 40%;
+    padding-top: 30px;
+    padding-left: 250px;
+}
+
+#overpress {
+    position:relative;
+    margin-left: 300px;
+    width: 200px;
+    bottom: 150px
+}
+
+#score {
+    bottom: 180px;
+    right: 0px;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    position: relative;
+    color: white;
+    font-size: 30px;
+}
+
+#game-over {
+    display: none;
+}
+

@@ -84,7 +84,7 @@ class Player {
 
     this.currentSprite = this.sprites.run.image;
     this.currentCropWidth = this.sprites.run.cropWidth;
-    this.maxFrames = this.sprites.run.maxFrames;
+    this.CurrentMaxFrames = this.sprites.run.maxFrames;
   }
   draw() {
     ctx.drawImage(
@@ -103,7 +103,7 @@ class Player {
   update() {
     if (frames % 4 === 0 && this.currentSprite === this.sprites.run.image) {
       this.frames += 1;
-      if (this.frames >= this.maxFrames) {
+      if (this.frames >= this.CurrentMaxFrames) {
         this.frames = 0;
       }
       this.draw();
@@ -112,16 +112,17 @@ class Player {
       this.currentSprite === this.sprites.jump.image
     ) {
       this.frames += 1;
-      if ((this.frames = this.maxFrames)) {
+      if ((this.frames = this.CurrentMaxFrames)) {
         this.frames = 0;
       }
       this.draw();
     } else if (
-      frames % 2 === 0 &&
+      frames % 6 === 0 &&
       this.currentSprite === this.sprites.doubleJump.image
     ) {
       this.frames += 1;
-      if (this.frames >= this.maxFrames) {
+      if (this.frames >= this.CurrentMaxFrames) {
+        console.log("hey");
         this.frames = 0;
         this.currentSprite = this.sprites.jump.image;
       }
@@ -131,7 +132,9 @@ class Player {
     }
 
     this.position.y += this.velocity.y;
-    if (this.position.y + this.height + this.velocity.y <= myCanvas.height) {
+    if (
+      this.position.y /*+ this.height + this.velocity.y*/ <= myCanvas.height
+    ) {
       this.velocity.y += gravity;
     } else {
       this.velocity.y = 0;
@@ -245,14 +248,18 @@ addEventListener("keydown", (event) => {
       break;
     case "Space":
       nJump += 1;
-      console.log(nJump);
-      console.log(currentGame.currentPlayer.currentSprite);
+      // console.log(nJump);
+      // console.log(currentGame.currentPlayer.currentSprite);
       if (nJump === 1) {
         currentGame.currentPlayer.velocity.y -= 17;
-        currentGame.currentPlayer.currentSprite =
-          currentGame.currentPlayer.sprites.jump.image;
+        currentGame.currentPlayer.CurrentMaxFrames =
+          currentGame.currentPlayer.CurrentMaxFrames =
+            currentGame.currentPlayer.sprites.jump.maxFrames;
+        currentGame.currentPlayer.sprites.jump.image;
       } else if (nJump === 2) {
         currentGame.currentPlayer.velocity.y -= 17;
+        currentGame.currentPlayer.CurrentMaxFrames =
+          currentGame.currentPlayer.sprites.doubleJump.maxFrames;
         currentGame.currentPlayer.currentSprite =
           currentGame.currentPlayer.sprites.doubleJump.image;
       }
@@ -261,10 +268,7 @@ addEventListener("keydown", (event) => {
 });
 
 function checkGameOver() {
-  if (
-    currentGame.currentPlayer.position.y + currentGame.currentPlayer.height >=
-    myCanvas.height
-  ) {
+  if (currentGame.currentPlayer.position.y >= myCanvas.height) {
     obstacleFrequency = 0;
     currentGame.currentPlatforms = [];
     scoreSpan.innerText = " " + currentGame.score;
@@ -380,6 +384,12 @@ function collisionsAndUpdate() {
         currentGame.currentPlayer.currentSprite =
           currentGame.currentPlayer.sprites.run.image;
         currentGame.currentPlayer.velocity.y = 0;
+        currentGame.currentPlayer.currentSprite =
+          currentGame.currentPlayer.sprites.run.image;
+        currentGame.currentPlayer.currentCropWidth =
+          currentGame.currentPlayer.sprites.run.cropWidth;
+        currentGame.currentPlayer.CurrentMaxFrames =
+          currentGame.currentPlayer.sprites.run.maxFrames;
         nJump = 0;
       }
     });

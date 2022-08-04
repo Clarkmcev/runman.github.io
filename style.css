@@ -5,14 +5,17 @@ body {
     justify-content: center;
 }
 
-#start-menu, #game-over {
+.description {
+    padding-top: 50px ;
     position: absolute;
-    text-align: center;
-    padding-top: 120px;
-    width: 800px;
-    height: 500px;;
-    height: 50vh;
+    color: yellow;
+    font-size: 20px;
+    margin-left: auto; 
+    margin-right: auto;
+    left: 0; 
+    right: 0;
 }
+
 
 
 .biglogo {
@@ -33,10 +36,14 @@ body {
 }
 
 #press-enter {
+    display: "none";
     position: absolute;
-    width: 40%;
-    padding-top: 30px;
-    padding-left: 250px;
+    width: 20%;
+    padding-top: 20px;
+    margin-left: auto;
+    margin-right: auto;
+    left: 0; 
+    right: 0;
 }
 
 #overpress {
@@ -49,13 +56,49 @@ body {
 #score {
     bottom: 180px;
     right: 0px;
-    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    font-family: bit;
+    font-weight: normal;
     position: relative;
-    color: white;
-    font-size: 30px;
+    color: yellow;
+    font-size: 50px;
 }
 
 #game-over {
     display: none;
 }
 
+@font-face {
+    font-family: 'bit';
+    src: url(Fonts/bit.ttf);
+    font-style: normal;
+    font-weight: 100;
+}
+
+#game-over {
+    position: fixed;
+    text-align: center;
+    padding-top: 5%;
+    width: 800px;
+    height: 50vh;
+}
+
+
+#start-menu {
+    position: absolute; 
+    text-align: center;
+    padding-top: 5%;
+    width: 800px;
+    height: 500px;;
+    height: 50vh;
+    font-family: bit;
+}
+
+@media (max-width: 500px) {
+    #game-over {
+        position: fixed;
+        margin-left: auto; 
+        margin-right: auto;
+        left: 0;
+        right: 0;
+    }
+}

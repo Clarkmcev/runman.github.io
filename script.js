@@ -7,9 +7,31 @@ myCanvas.height = 500;
 
 // Configs
 const gravity = 1;
-let speedObj = 2;
+let speedObj = 1.25;
 let onRand = true;
 let gameAsStarted = false;
+
+// Audio
+var jumpSound = new Audio("./SOUND/SFX_Jump_42.wav", 100);
+var doubleJump = new Audio("./SOUND/SFX_Jump_24.wav");
+var playerFall = new Audio("./SOUND/sfx_player_fall.mp3");
+var footSteps = new Audio("./SOUND/sfx_player_footsteps.mp3");
+var fruitCollected = new Audio("./SOUND/collected.wav");
+var jumpLand = new Audio("./SOUND/jumpland.wav");
+var musicBack = new Audio("./SOUND/Musics/Runman soundtrack MASTER.wav", 0.2);
+var enterSound = new Audio("./SOUND/entersound.wav");
+var gameOverSound = new Audio("./SOUND/game_over_bad_chest.wav");
+var musicFront = new Audio("./SOUND/Musics/spirited_away.mp3");
+var musicFront = new Audio("./SOUND/Musics/8-bit-lofi-hip-hop (1).mp3");
+
+musicBack.volume = 1;
+jumpSound.volume = 0.6;
+enterSound.volume = 0.5;
+doubleJump.volume = 0.5;
+fruitCollected.volume = 0.4;
+gameOverSound.volume = 1;
+musicFront.volume = 0.7;
+jumpLand.volume = 1;
 
 const back1 = new Image(800, 700);
 const back2 = new Image(800, 700);
@@ -21,6 +43,8 @@ const back6 = new Image(88, 700);
 const maskRun = new Image(32, 32);
 const maskJump = new Image(100, 200);
 const maskDoubleJump = new Image(100, 200);
+const maskFall = new Image(100, 200);
+const maskIdle = new Image(100, 200);
 
 const grass1 = new Image(1000, 500);
 const grass2 = new Image(100, 200);
@@ -52,6 +76,8 @@ back6.src = "./IMG/Hills Layer 05.png";
 maskRun.src = "./IMG/mask run.png";
 maskJump.src = "./IMG/mask jump.png";
 maskDoubleJump.src = "./IMG/mask double jump.png";
+maskFall.src = "./IMG/Fall (32x32).png";
+maskIdle.src = "./IMG/Idle (32x32).png";
 
 grass1.src = "./IMG/grass.png";
 grass2.src = "./IMG/grass_half.png";
@@ -101,8 +127,8 @@ let pressLoop2 = false;
 class Player {
   constructor() {
     this.position = {
-      x: 200,
-      y: 300,
+      x: 150,
+      y: 370,
     };
     this.velocity = {
       x: 0,
@@ -129,11 +155,27 @@ class Player {
         cropWidth: 32,
         maxFrames: 6,
       },
+      fall: {
+        image: maskFall,
+        cropWidth: 32,
+        maxFrames: 1,
+      },
+      idle: {
+        image: maskIdle,
+        cropWidth: 32,
+        maxFrames: 1,
+      },
     };
 
-    this.currentSprite = this.sprites.run.image;
-    this.currentCropWidth = this.sprites.run.cropWidth;
-    this.CurrentMaxFrames = this.sprites.run.maxFrames;
+    // if (!gameAsStarted) {
+    this.currentSprite = this.sprites.idle.image;
+    this.currentCropWidth = this.sprites.idle.cropWidth;
+    this.CurrentMaxFrames = this.sprites.idle.maxFrames;
+    // } else {
+    //   this.currentSprite = this.sprites.run.image;
+    //   this.currentCropWidth = this.sprites.run.cropWidth;
+    //   this.CurrentMaxFrames = this.sprites.run.maxFrames;
+    // }
   }
   draw() {
     ctx.drawImage(
@@ -177,6 +219,14 @@ class Player {
       this.draw();
     } else {
       this.draw();
+    }
+
+    if (
+      frames % 30 === 0 &&
+      this.currentSprite === this.sprites.run.image &&
+      gameAsStarted
+    ) {
+      footSteps.play();
     }
 
     this.position.y += this.velocity.y;
@@ -242,7 +292,7 @@ class Coin {
     };
     this.velocity = {
       x: 0,
-      y: 1,
+      y: 0.2,
     };
     this.width = width;
     this.height = height;
@@ -255,31 +305,43 @@ class Coin {
         image: bananaImg,
         cropWidth: 32,
         maxFrames: 17,
+        points: 1,
       },
-      cheery: {
+      cherry: {
         image: cherryImg,
         cropWidth: 32,
         maxFrames: 4,
+        points: 2,
       },
       strawberry: {
         image: strawberryImg,
         cropWidth: 32,
         maxFrames: 4,
+        points: 3,
+      },
+      melon: {
+        image: melonImg,
+        cropWidth: 32,
+        maxFrames: 4,
+        points: 3,
       },
       orange: {
         image: orangeImg,
         cropWidth: 32,
         maxFrames: 4,
+        points: 4,
       },
       pineapple: {
         image: pineappleImg,
         cropWidth: 32,
         maxFrames: 4,
+        points: 2,
       },
       apple: {
         image: appleImg,
         cropWidth: 32,
         maxFrames: 4,
+        points: 2,
       },
       collected: {
         image: collectedImg,
@@ -367,16 +429,21 @@ setInterval(() => {
 
 // Start function
 function startGame() {
+  musicFront.pause();
+  musicFront.currentTime = 0;
   gameAsStarted = true;
+  gameOverSound.pause();
+  gameOverSound.currenTime = 0;
+  musicBack.play();
   clearInterval();
 }
 
 function computeScore() {
   const points = Math.floor(obstacleFrequency / 100);
   currentGame.score = points;
-  ctx.font = "50px retro";
-  ctx.fillStyle = "white";
-  ctx.fillText(`Score: ${currentGame.score}`, myCanvas.width - 200, 50);
+  ctx.font = "50px bit";
+  ctx.fillStyle = "yellow";
+  ctx.fillText(`Score ${currentGame.score}`, myCanvas.width - 200, 50);
 }
 
 function updateSpeed() {
@@ -395,21 +462,26 @@ addEventListener("keydown", (event) => {
   switch (event.code) {
     case "Enter":
       startMenu.style.display = "none";
-      startGame();
+      enterSound.play();
+      if (!gameAsStarted) {
+        startGame();
+      }
       if (gameAsStarted) {
         gameOverMenu.style.display = "none";
         Init();
       }
+
       break;
     case "Space":
       nJump += 1;
       if (nJump === 1) {
+        jumpSound.play();
         currentGame.currentPlayer.velocity.y -= 17;
         currentGame.currentPlayer.CurrentMaxFrames =
           currentGame.currentPlayer.CurrentMaxFrames =
             currentGame.currentPlayer.sprites.jump.maxFrames;
-        currentGame.currentPlayer.sprites.jump.image;
       } else if (nJump === 2) {
+        doubleJump.play(currentGame.currentPlayer.velocity.y);
         currentGame.currentPlayer.velocity.y -= 17;
         currentGame.currentPlayer.CurrentMaxFrames =
           currentGame.currentPlayer.sprites.doubleJump.maxFrames;
@@ -422,21 +494,29 @@ addEventListener("keydown", (event) => {
 
 function checkGameOver() {
   if (currentGame.currentPlayer.position.y >= myCanvas.height) {
+    playerFall.play();
+  }
+
+  if (currentGame.currentPlayer.position.y >= myCanvas.height) {
     obstacleFrequency = 0;
     currentGame.currentPlatforms = [];
     scoreSpan.innerText = " " + currentGame.score;
     currentGame.score = 0;
     gameOverMenu.style.display = "block";
-    speedObj = 5;
+    speedObj = 1.25;
     delete currentGame.currentPlayer;
     gameAsStarted = false;
-  }
+    musicBack.pause();
+    musicBack.currentTime = 0;
+    gameOverSound.play();
+    return true;
+  } else return false;
 }
 
 function randomObjects(n) {
   let arrFruit = [
     "banana",
-    "cheery",
+    "cherry",
     "strawberry",
     "pineapple",
     "melon",
@@ -446,17 +526,25 @@ function randomObjects(n) {
   // let image;
   setTimeout(() => {
     if (n % 50 === 1) {
-      let randomY = Math.floor(Math.random() * 450 + 100);
+      let randomY = Math.floor(Math.random() * 200 + 160);
+      let randomWidth = Math.floor(Math.random() * 100 + 150);
       currentGame.currentPlatforms.push(
-        new Platform(myCanvas.width, randomY, 200, 50, smallplatform)
+        new Platform(myCanvas.width, randomY, randomWidth, 50, smallplatform)
       );
-    }
-    if (n % 50 === 1) {
       let imageIndexRandom = Math.floor(Math.random() * arrFruit.length);
-      let randomX = Math.floor(Math.random() * myCanvas.width) + 600;
-      currentGame.currentPlatforms.push(
-        new Coin(randomX, 0, 50, 60, arrFruit[imageIndexRandom])
-      );
+
+      let randomSpawnFruit = Math.floor(Math.random() * 100);
+      if (randomSpawnFruit >= 65) {
+        currentGame.currentCoins.push(
+          new Coin(
+            myCanvas.width + randomWidth / 2,
+            randomY - 100,
+            50,
+            60,
+            arrFruit[imageIndexRandom]
+          )
+        );
+      }
     }
   }, 10);
 }
@@ -464,15 +552,32 @@ function randomObjects(n) {
 let obstacleFrequency = 0;
 
 function Init() {
+  gameOverSound.pause();
+  gameOverSound.currentTime = 0;
+  if (!gameAsStarted) {
+    musicFront.play();
+  }
   currentGame = new Game();
   currentGame.currentPlayer = new Player();
 
   // Platform plus froot init
-  currentGame.currentCoins = [new Coin(250, 100, 50, 60, "cheery")];
-  currentGame.currentPlatforms = [new Platform(0, 450, 800, 50, bigplatform)];
+  currentGame.currentCoins = [new Coin(560, 350, 50, 60, "banana")];
+  // currentGame.currentCoins.push(new Coin(420, 350, 50, 60, "cherry"));
+  // currentGame.currentCoins.push(new Coin(480, 350, 50, 60, "strawberry"));
+  // currentGame.currentCoins.push(new Coin(440, 350, 50, 60, "pineapple"));
+  // currentGame.currentCoins.push(new Coin(400, 350, 50, 60, "melon"));
+  // currentGame.currentCoins.push(new Coin(360, 350, 50, 60, "orange"));
+  // currentGame.currentCoins.push(new Coin(320, 350, 50, 60, "apple"));
 
+  currentGame.currentPlatforms = [new Platform(0, 450, 800, 50, bigplatform)];
   currentGame.currentPlatforms[0].update();
   currentGame.currentCoins[0].update();
+  // currentGame.currentCoins[1].update();
+  // currentGame.currentCoins[2].update();
+  // currentGame.currentCoins[3].update();
+  // currentGame.currentCoins[4].update();
+  // currentGame.currentCoins[5].update();
+  // currentGame.currentCoins[6].update();
   currentGame.currentPlayer.update();
 }
 
@@ -535,7 +640,6 @@ function backgroundRender() {
   }
 
   if (widthBack == -myCanvas.width) {
-    console.log;
     widthBack = 0;
   }
 
@@ -563,7 +667,7 @@ function collisionsAndUpdate() {
     });
     currentGame.currentPlayer.update();
 
-    // Collision Platforms
+    // Collision Platforms vs Player
     currentGame.currentPlatforms.forEach((elem) => {
       if (
         currentGame.currentPlayer.position.y +
@@ -601,12 +705,23 @@ function collisionsAndUpdate() {
           coin.position.x + coin.width >= platform.position.x &&
           platform.position.x + platform.width >= coin.position.x
         ) {
-          coin.velocity.y = 0;
+          coin.velocity.y = -5;
         }
-        if (coin.position.x <= currentGame.currentPlayer.position.x) {
+        if (
+          coin.position.x <= currentGame.currentPlayer.position.x &&
+          currentGame.currentPlayer.position.y >= coin.position.y &&
+          coin.position.x + coin.width > currentGame.currentPlayer.position.x &&
+          currentGame.currentPlayer.position.x +
+            currentGame.currentPlayer.width >=
+            coin.position.x
+        ) {
+          // if (fruitCollected.currentTime > 0) {
+          //   fruitCollected.pause;
+          //   fruitCollected.currentTime = 0;
+          // }
+          fruitCollected.play();
+          currentGame.score += 1;
           coin.currentSprite = collectedImg;
-          coin.CurrentMaxFrames = coin.sprites.collected.maxFrames;
-          console.log(coin.CurrentMaxFrames);
         }
       });
     });
@@ -623,7 +738,7 @@ function animate() {
   collisionsAndUpdate();
 
   if (gameAsStarted) {
-    speedObj += 0.005;
+    speedObj += 0.004;
     obstacleFrequency++;
     updateSpeed();
     randomObjects(obstacleFrequency);
